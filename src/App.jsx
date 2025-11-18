@@ -4,6 +4,7 @@ import CompanyCard from './components/CompanyCard'
 import CompanyTable from './components/CompanyTable'
 import FilterBar from './components/FilterBar'
 import ViewControls from './components/ViewControls'
+import Pagination from './components/Pagination'
 
 function App() {
   const [filters, setFilters] = useState({
@@ -13,9 +14,11 @@ function App() {
   })
   const [view, setView] = useState('card') // 'card' or 'table'
   const [sortBy, setSortBy] = useState('name-asc')
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 6 // Show 6 companies per page
 
   // Filter and sort companies
-  const processedCompanies = useMemo(() => {
+  const filteredAndSortedCompanies = useMemo(() => {
     // First, filter
     let result = companiesData.filter((company) => {
       const matchesSearch = company.name
@@ -54,6 +57,23 @@ function App() {
     return result
   }, [filters, sortBy])
 
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredAndSortedCompanies.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentCompanies = filteredAndSortedCompanies.slice(startIndex, endIndex)
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters)
+    setCurrentPage(1)
+  }
+
+  const handleSortChange = (newSort) => {
+    setSortBy(newSort)
+    setCurrentPage(1)
+  }
+
   return (
     <div className="min-h-screen w-screen bg-gray-100">
       {/* Header */}
@@ -73,7 +93,7 @@ function App() {
         {/* Filter Bar */}
         <FilterBar 
           companies={companiesData} 
-          onFilterChange={setFilters}
+          onFilterChange={handleFilterChange}
         />
 
         {/* View Controls & Sort */}
@@ -81,27 +101,38 @@ function App() {
           view={view}
           onViewChange={setView}
           sortBy={sortBy}
-          onSortChange={setSortBy}
+          onSortChange={handleSortChange}
         />
 
         {/* Results Count */}
         <div className="mb-4">
           <p className="text-gray-700 font-medium">
-            Showing {processedCompanies.length} of {companiesData.length} companies
+            Showing {startIndex + 1}-{Math.min(endIndex, filteredAndSortedCompanies.length)} of {filteredAndSortedCompanies.length} companies
           </p>
         </div>
 
         {/* Companies Display */}
-        {processedCompanies.length > 0 ? (
-          view === 'card' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {processedCompanies.map((company) => (
-                <CompanyCard key={company.id} company={company} />
-              ))}
-            </div>
-          ) : (
-            <CompanyTable companies={processedCompanies} />
-          )
+        {currentCompanies.length > 0 ? (
+          <>
+            {view === 'card' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {currentCompanies.map((company) => (
+                  <CompanyCard key={company.id} company={company} />
+                ))}
+              </div>
+            ) : (
+              <CompanyTable companies={currentCompanies} />
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            )}
+          </>
         ) : (
           <div className="text-center py-12 bg-white rounded-lg shadow-md">
             <p className="text-gray-500 text-lg">

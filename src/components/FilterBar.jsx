@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 function FilterBar({ companies, onFilterChange }) {
   const [searchTerm, setSearchTerm] = useState('')
@@ -9,19 +9,48 @@ function FilterBar({ companies, onFilterChange }) {
   const locations = [...new Set(companies.map(c => c.location))].sort()
   const industries = [...new Set(companies.map(c => c.industry))].sort()
 
-  // Notify parent component whenever filters change
-  useEffect(() => {
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    const value = e.target.value
+    setSearchTerm(value)
     onFilterChange({
-      searchTerm,
+      searchTerm: value,
       location: selectedLocation,
       industry: selectedIndustry
     })
-  }, [searchTerm, selectedLocation, selectedIndustry, onFilterChange])
+  }
+
+  // Handle location filter change
+  const handleLocationChange = (e) => {
+    const value = e.target.value
+    setSelectedLocation(value)
+    onFilterChange({
+      searchTerm,
+      location: value,
+      industry: selectedIndustry
+    })
+  }
+
+  // Handle industry filter change
+  const handleIndustryChange = (e) => {
+    const value = e.target.value
+    setSelectedIndustry(value)
+    onFilterChange({
+      searchTerm,
+      location: selectedLocation,
+      industry: value
+    })
+  }
 
   const handleClearFilters = () => {
     setSearchTerm('')
     setSelectedLocation('')
     setSelectedIndustry('')
+    onFilterChange({
+      searchTerm: '',
+      location: '',
+      industry: ''
+    })
   }
 
   return (
@@ -40,7 +69,7 @@ function FilterBar({ companies, onFilterChange }) {
             type="text"
             placeholder="Search companies..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
@@ -52,7 +81,7 @@ function FilterBar({ companies, onFilterChange }) {
           </label>
           <select
             value={selectedLocation}
-            onChange={(e) => setSelectedLocation(e.target.value)}
+            onChange={handleLocationChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">All Locations</option>
@@ -71,7 +100,7 @@ function FilterBar({ companies, onFilterChange }) {
           </label>
           <select
             value={selectedIndustry}
-            onChange={(e) => setSelectedIndustry(e.target.value)}
+            onChange={handleIndustryChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">All Industries</option>
