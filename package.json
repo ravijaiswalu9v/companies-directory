@@ -2,6 +2,7 @@
   "name": "companies-directory",
   "private": true,
   "version": "0.0.0",
+  "description": "A modern React application for browsing and filtering company information",
   "type": "module",
   "scripts": {
     "dev": "vite",
