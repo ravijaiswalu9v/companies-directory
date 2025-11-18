@@ -47,7 +47,7 @@ A modern, responsive React application for browsing and filtering company inform
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/YOUR_USERNAME/companies-directory.git
+git clone https://github.com/ravijaiswalu9v/companies-directory.git
 cd companies-directory
 ```
 
@@ -137,7 +137,7 @@ Smart pagination with ellipsis for large datasets.
 
 ## 🌐 Live Demo
 
-🔗 [View Live Application](#) *(Will be updated after deployment)*
+🔗 [View Live Application](https://691c10568452fc2f59b6d5d3--ravijaiswal-companies-directory.netlify.app/)
 
 ## 👨‍💻 Developer
 
