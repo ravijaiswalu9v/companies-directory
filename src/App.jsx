@@ -1,10 +1,12 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { companiesData } from './data/companies'
 import CompanyCard from './components/CompanyCard'
 import CompanyTable from './components/CompanyTable'
 import FilterBar from './components/FilterBar'
 import ViewControls from './components/ViewControls'
 import Pagination from './components/Pagination'
+import LoadingSpinner from './components/LoadingSpinner'
+import Footer from './components/Footer'
 
 function App() {
   const [filters, setFilters] = useState({
@@ -12,14 +14,22 @@ function App() {
     location: '',
     industry: ''
   })
-  const [view, setView] = useState('card') // 'card' or 'table'
+  const [view, setView] = useState('card')
   const [sortBy, setSortBy] = useState('name-asc')
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 6 // Show 6 companies per page
+  const [isLoading, setIsLoading] = useState(true)
+  const itemsPerPage = 6
+
+  // Simulate initial loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 800)
+    return () => clearTimeout(timer)
+  }, [])
 
   // Filter and sort companies
   const filteredAndSortedCompanies = useMemo(() => {
-    // First, filter
     let result = companiesData.filter((company) => {
       const matchesSearch = company.name
         .toLowerCase()
@@ -34,7 +44,6 @@ function App() {
       return matchesSearch && matchesLocation && matchesIndustry
     })
 
-    // Then, sort
     result.sort((a, b) => {
       switch (sortBy) {
         case 'name-asc':
@@ -74,8 +83,25 @@ function App() {
     setCurrentPage(1)
   }
 
+  // Scroll to top when page changes
+  const handlePageChange = (page) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen w-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <LoadingSpinner />
+          <p className="mt-4 text-gray-600 font-medium">Loading companies...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen w-screen bg-gray-100">
+    <div className="min-h-screen w-screen bg-gray-100 flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-6">
@@ -83,13 +109,13 @@ function App() {
             Companies Directory
           </h1>
           <p className="text-gray-600 mt-2">
-            Total companies: {companiesData.length}
+            Explore and filter through our database of {companiesData.length} companies
           </p>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
         {/* Filter Bar */}
         <FilterBar 
           companies={companiesData} 
@@ -107,7 +133,13 @@ function App() {
         {/* Results Count */}
         <div className="mb-4">
           <p className="text-gray-700 font-medium">
-            Showing {startIndex + 1}-{Math.min(endIndex, filteredAndSortedCompanies.length)} of {filteredAndSortedCompanies.length} companies
+            {filteredAndSortedCompanies.length > 0 ? (
+              <>
+                Showing {startIndex + 1}-{Math.min(endIndex, filteredAndSortedCompanies.length)} of {filteredAndSortedCompanies.length} companies
+              </>
+            ) : (
+              'No companies found'
+            )}
           </p>
         </div>
 
@@ -129,18 +161,37 @@ function App() {
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
-                onPageChange={setCurrentPage}
+                onPageChange={handlePageChange}
               />
             )}
           </>
         ) : (
           <div className="text-center py-12 bg-white rounded-lg shadow-md">
-            <p className="text-gray-500 text-lg">
+            <svg 
+              className="mx-auto h-12 w-12 text-gray-400" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" 
+              />
+            </svg>
+            <p className="mt-4 text-gray-500 text-lg">
               No companies found matching your filters.
+            </p>
+            <p className="mt-2 text-gray-400 text-sm">
+              Try adjusting your search criteria
             </p>
           </div>
         )}
       </main>
+
+      {/* Footer */}
+      <Footer />
     </div>
   )
 }
